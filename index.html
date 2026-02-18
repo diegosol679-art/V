@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Illias</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Animated background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- ===== APP SHELL ===== -->
+  <div class="app-shell">
+
+    <!-- ===== MAIN CHAT AREA ===== -->
+    <main class="chat-area">
+
+      <!-- Top bar -->
+      <header class="chat-header glass">
+        <div class="header-left">
+          <span class="app-logo">✦</span>
+          <span class="app-name">Illias</span>
+        </div>
+        <div class="header-right">
+          <div class="token-badge glass" id="tokenBadge" title="Tokens used this session">
+            <span class="badge-icon">⚡</span>
+            <span id="totalTokens">0</span> tokens
+          </div>
+          <div class="cost-badge glass" id="costBadge" title="Estimated cost this session">
+            <span class="badge-icon">💰</span>
+            $<span id="totalCost">0.000000</span>
+          </div>
+          <button class="icon-btn glass" id="clearBtn" title="Clear chat">🗑️</button>
+          <button class="icon-btn glass sidebar-toggle" id="sidebarToggle" title="Toggle settings">⚙️</button>
+        </div>
+      </header>
+
+      <!-- API Key banner (shown when no key is set) -->
+      <div class="api-banner glass" id="apiBanner">
+        <span>🔑</span>
+        <span>Enter your Gemini API key in the sidebar to get started</span>
+        <button class="pill-btn" onclick="document.getElementById('sidebarToggle').click()">Open Settings →</button>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-container" id="messagesContainer">
+        <!-- Welcome state -->
+        <div class="welcome-state" id="welcomeState">
+          <div class="welcome-logo">✦</div>
+          <h1 class="welcome-title">Hey, I'm Illias</h1>
+          <p class="welcome-sub">Powered by Gemini. Your API key, your AI.</p>
+          <div class="welcome-chips">
+            <button class="chip glass" onclick="usePrompt('Explain quantum computing like I\'m 15')">⚛️ Explain quantum computing</button>
+            <button class="chip glass" onclick="usePrompt('Write me a short rap about coding')">🎤 Write a rap about coding</button>
+            <button class="chip glass" onclick="usePrompt('What\'s the coolest fact you know?')">🤯 Coolest fact you know</button>
+            <button class="chip glass" onclick="usePrompt('Help me debug my code')">🐛 Help debug my code</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area glass">
+        <textarea
+          id="messageInput"
+          class="message-input"
+          placeholder="Message Illias..."
+          rows="1"
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">
+          <span class="send-icon">↑</span>
+        </button>
+      </div>
+
+    </main>
+
+    <!-- ===== RIGHT SIDEBAR ===== -->
+    <aside class="sidebar glass" id="sidebar">
+
+      <div class="sidebar-header">
+        <span class="sidebar-title">Settings</span>
+        <button class="icon-btn" id="closeSidebar" title="Close">✕</button>
+      </div>
+
+      <div class="sidebar-content">
+
+        <!-- API Key -->
+        <div class="setting-group">
+          <label class="setting-label">🔑 Gemini API Key</label>
+          <div class="key-input-wrap">
+            <input
+              type="password"
+              id="apiKeyInput"
+              class="setting-input"
+              placeholder="AIza..."
+              oninput="onApiKeyChange()"
+            />
+            <button class="icon-btn" id="toggleKeyVis" onclick="toggleKeyVisibility()" title="Show/hide key">👁️</button>
+          </div>
+          <span class="setting-hint">Never saved. Stays in memory only.</span>
+        </div>
+
+        <!-- Model selector -->
+        <div class="setting-group">
+          <label class="setting-label">🤖 Model</label>
+          <select id="modelSelect" class="setting-input" onchange="onModelChange()">
+            <!-- Populated by app.js -->
+          </select>
+          <span class="setting-hint" id="modelDesc"></span>
+        </div>
+
+        <!-- Temperature -->
+        <div class="setting-group">
+          <label class="setting-label">
+            🌡️ Temperature
+            <span class="setting-value" id="tempValue">0.5</span>
+          </label>
+          <input
+            type="range"
+            id="tempSlider"
+            class="setting-slider"
+            min="0" max="2" step="0.05" value="0.5"
+            oninput="onTempChange(this.value)"
+          />
+          <div class="slider-labels">
+            <span>Precise</span>
+            <span>Balanced</span>
+            <span>Wild 🔥</span>
+          </div>
+        </div>
+
+        <!-- Max tokens -->
+        <div class="setting-group">
+          <label class="setting-label">
+            📏 Max Tokens
+            <span class="setting-value" id="maxTokensValue">1024</span>
+          </label>
+          <input
+            type="range"
+            id="maxTokensSlider"
+            class="setting-slider"
+            min="256" max="8192" step="256" value="1024"
+            oninput="onMaxTokensChange(this.value)"
+          />
+          <div class="slider-labels">
+            <span>Short</span>
+            <span>Long</span>
+          </div>
+        </div>
+
+        <!-- System prompt -->
+        <div class="setting-group">
+          <label class="setting-label">🧠 System Prompt</label>
+          <textarea
+            id="systemPrompt"
+            class="setting-input setting-textarea"
+            rows="4"
+            placeholder="You are a helpful assistant."
+            oninput="onSystemPromptChange()"
+          ></textarea>
+          <span class="setting-hint">Sets AI personality & behavior.</span>
+        </div>
+
+        <!-- Theme customizer -->
+        <div class="setting-group">
+          <label class="setting-label">🎨 Accent Color</label>
+          <div class="color-swatches">
+            <button class="swatch active" data-gradient="blue-black"  onclick="setTheme('blue-black')"  style="background: linear-gradient(135deg,#0066ff,#000)"></button>
+            <button class="swatch" data-gradient="purple-pink"  onclick="setTheme('purple-pink')"  style="background: linear-gradient(135deg,#a855f7,#ec4899)"></button>
+            <button class="swatch" data-gradient="cyan-blue"    onclick="setTheme('cyan-blue')"    style="background: linear-gradient(135deg,#06b6d4,#3b82f6)"></button>
+            <button class="swatch" data-gradient="green-yellow" onclick="setTheme('green-yellow')" style="background: linear-gradient(135deg,#22c55e,#eab308)"></button>
+            <button class="swatch" data-gradient="orange-red"   onclick="setTheme('orange-red')"   style="background: linear-gradient(135deg,#f97316,#ef4444)"></button>
+          </div>
+        </div>
+
+        <!-- Session stats -->
+        <div class="setting-group stats-group glass-dark">
+          <div class="stat-row">
+            <span>Messages</span>
+            <span id="statMessages">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Input tokens</span>
+            <span id="statInputTokens">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Output tokens</span>
+            <span id="statOutputTokens">0</span>
+          </div>
+          <div class="stat-row total-row">
+            <span>Est. cost</span>
+            <span>$<span id="statCost">0.000000</span></span>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
+
